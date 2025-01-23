@@ -1,0 +1,122 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Rating Plans</title>
+
+    <link th:rel="stylesheet" th:href="@{assets/jquery-treetable/jquery.treetable.css}"/>
+    <link th:rel="stylesheet" th:href="@{assets/jquery-treetable/jquery.treetable.theme.default.css}"/>
+    <link th:rel="stylesheet" th:href="@{webjars/bootstrap/4.0.0-2/css/bootstrap.min.css} "/>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">Thymeleaf - Bootstrap Tree Table</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="row">
+        <div class="col mt-5">
+
+            <table id="treeTable" class="table">
+                <thead>
+                <tr>
+                    <th>Name</th><th>ID</th>
+
+                </tr>
+                </thead>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script th:src="@{/assets/jquery-treetable/jquery.treetable.js}"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#treeTable").treetable({
+            expandable: true,
+            initialState: "expanded",
+            clickableNodeNames: true,
+            indent: 30
+        });
+
+        $.ajax({
+            "type": 'get',
+            "url": '/nodes',
+            "dataType": "json",
+            "success": function (data) {
+                debugger;
+                var templist=[];
+                $.each(data, function (idx, obj) {
+                    var row = "<tr data-tt-id=\"" + obj.id + "\" data-tt-parent-id=\"" + obj.parentId + "\"><td>" + obj.name + "</td><td>"+obj.id+"</td></tr>";
+                    //$("#treeTable").append(row);
+
+                    if(obj.parentId !=null) {
+                        var parent = $("#treeTable").treetable("node", obj.parentId.toString());
+                        if(parent!=null){
+                        $("#treeTable").treetable("loadBranch", parent, row);}
+                        else{
+                            templist.push(obj);
+                        }
+                    }else {
+                        $("#treeTable").treetable("loadBranch", null, row);
+                    }
+                });
+                var size = templist.length;
+                while (size>0){
+                    var obj=templist.shift();
+                    var row = "<tr data-tt-id=\"" + obj.id + "\" data-tt-parent-id=\"" + obj.parentId + "\"><td>" + obj.name + "</td><td>"+obj.id+"</td></tr>";
+                    if(obj.parentId !=null) {
+                        var parent = $("#treeTable").treetable("node", obj.parentId.toString());
+                        if(parent!=null){
+                            $("#treeTable").treetable("loadBranch", parent, row);}
+                        else{
+                            templist.push(obj);
+                        }
+                    }else {
+                        $("#treeTable").treetable("loadBranch", null, row);
+                    }
+                    size = templist.length;
+
+                }
+
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
